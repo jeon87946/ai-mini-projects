@@ -9,22 +9,22 @@
 
 - **주 평가 지표:** MAE
 - **보조 지표:** RMSE, R²
-- **모델 비교에 사용한 데이터:** ___
-- **MAE를 주요 지표로 선택한 이유:** ___
+- **모델 비교에 사용한 데이터:** train, valid
+- **MAE를 주요 지표로 선택한 이유: 모델을 평가하기 위해서는 한 시간대에 대여량을 평균 몇 대나 틀리는지 확인해야 된다.
 
 ## 2. 모델별 실험 결과 (CP-04~CP-06)
 
 대표 설정별 Train MAE / Validation MAE를 기록합니다. 전체 실험 결과는 Notebook의 `results_df`에서 확인합니다.
 
-- **DummyRegressor (mean):** Train ___ / Validation ___
-- **LinearRegression:** Train ___ / Validation ___
-- **DecisionTreeRegressor (`max_depth=___`):** Train ___ / Validation ___
-- **RandomForestRegressor (설정 ___):** Train ___ / Validation ___
+- **DummyRegressor (mean):** Train 119.572 / Validation 194.109
+- **LinearRegression:** Train 55.382 / Validation 99.725
+- **DecisionTreeRegressor (`max_depth=12`):** Train MAE 32.966 / Validation MAE 79.959
+- **RandomForestRegressor (설정 B):** Train MAE 22.255 / Validation MAE 64.517
 
 **실험에서 발견한 점**
 
-- **Decision Tree 깊이 변화에 따른 성능:** ___
-- **Random Forest 두 설정의 차이:** ___
+- **Decision Tree 깊이 변화에 따른 성능:** 깊이가 깊어질수록 예측 성능이 좋아지고 있다.
+- **Random Forest 두 설정의 차이:** 하이퍼파라미터 설정값이(의사결정나무, 최대 깊이) 다르다
 - **Train·Validation 성능 차이에서 관찰한 현상:** ___ (`001_data_analysis`의 2절 `cnt` 평균 차이와 연결해 작성)
 
 ## 3. 예측 오류 분석 (CP-07)
