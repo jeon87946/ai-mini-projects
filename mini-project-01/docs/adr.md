@@ -16,10 +16,23 @@
 
 예측 시점에 사용할 수 없거나 누수가 발생할 수 있는 특성이 있습니다.
 
-- **검토한 선택지:** ___ (예: `casual`·`registered` 포함 여부, `atemp` 포함 여부, `windspeed` 제거 여부)
-- **최종 선택(사용·제외한 특성):** ___
-- **선택 근거(누수 확인, 예측 시점, 상관관계 등):** ___
-- **감수한 한계 또는 추후 확인할 점:** ___
+- **검토한 선택지:** casual·registered 두개의 특성을 더하면 'cnt'값이 나오므로 데이터 누수가 발생한다. temp와 atemp는 정보가 중복될 가능성이 있어서 atemp를 제외하였다. windspeed는 상관관계가 낮더라도 비선형 관계일 가능성이 있어서 제거하지 않았다.
+- **최종 선택(사용·제외한 특성):**   
+    사용한 특성
+    "season",
+    "yr",
+    "mnth",
+    "hr",
+    "holiday",
+    "weekday",
+    "workingday",
+    "weathersit",
+    "temp",
+    "hum",
+    "windspeed"
+
+- **선택 근거(누수 확인, 예측 시점, 상관관계 등):** cnt와 직접적인 관계를 가지는 casual, registered는 데이터 누수를 방지하기 위해 입력 특성에서 제외하였다. 또한 temp와 atemp는 모두 온도와 관련된 특성으로 비슷한 정보가 중복될 가능성이 있어, atemp를 제외하고 temp를 사용하였다.
+- **감수한 한계 또는 추후 확인할 점:** temp만 사용한 모델과 temp, atemp를 모두 사용한 모델의 성능을 비교하여 특성 제외가 적절했는지 확인할 필요가 있다. 
 
 **분석 근거:** `01_regression_data_analysis.md`
 
@@ -29,11 +42,11 @@
 
 서로 다른 회귀 모델 및 설정 중 하나를 최종 모델로 선택해야 합니다.
 
-- **비교한 모델·설정:** ___
-- **최종 선택한 모델·설정:** ___
-- **선택 근거(Validation MAE, 과대적합 가능성, 시간대별 오류 등):** ___
-- **선택 모델의 장점:** ___
-- **남아 있는 한계 또는 개선 방향:** ___
+- **비교한 모델·설정:** DummyRegressor(평균값 예측), LinearRegression(선형 회귀), DecisionTreeRegressor(최대 깊이 3, 6, 12), RandomForestRegressor(A/B)를 비교하였다.
+- **최종 선택한 모델·설정:** RandomForestRegressor(B)
+- **선택 근거(Validation MAE, 과대적합 가능성, 시간대별 오류 등):** MAE 기준으로 모델 예측 성능을 비교하고 훈련 데이터 및 검증 데이터의 성능 차이가 있는지 비교하였다. 
+- **선택 모델의 장점:** 단순한 관계만으로 설명하기 어려운 대여량 패턴을 파악하여 MAE 예측 편차가 크지 않았다.
+- **남아 있는 한계 또는 개선 방향:** 특정 시간대에는 대여량 변동이 커서 예측 오차가 발생한다. 시간대별 오차를 줄이기 위한 특성 추가 등과 같은 개선이 필요하다.
 
 **분석 근거:** `01_regression_model_analysis.md`
 
@@ -47,10 +60,10 @@
 
 구매 세션이 전체의 약 15%뿐인 불균형 데이터이므로, Accuracy만으로 구매 클래스를 얼마나 잘 예측하는지 판단하기 어렵습니다.
 
-- **검토한 선택지:** ___ (예: Accuracy, 구매 클래스 F1, Precision, Recall)
-- **최종 선택한 주 지표와 보조 지표:** ___
-- **선택 근거(DummyClassifier와 LogisticRegression 결과, FP·FN 등):** ___
-- **감수한 한계 또는 추후 확인할 점:** ___
+- **검토한 선택지:** F1, Precision, Recall
+- **최종 선택한 주 지표와 보조 지표:** F1 / Accuracy Precision Recall
+- **선택 근거(DummyClassifier와 LogisticRegression 결과, FP·FN 등):** DummyClassifier는 Accuracy가 0.845로 높게 나타났지만, 구매 클래스를 예측하지 못해 Precision, Recall, F1이 모두 0.00으로 나타났다. LogisticRegression의 경우 혼동행렬에서 실제 구매 고객을 미구매로 예측한 FN이 181명으로 나타났다. 전체 정답률인 Accuracy뿐만 아니라 구매 고객을 얼마나 정확하게 찾아내는지 확인할 수 있는 F1, Precision, Recall을 함께 비교할 필요가 있다고 판단했다.
+- **감수한 한계 또는 추후 확인할 점:** F1을 주 지표로 선택하면 Precision과 Recall의 균형은 평가할 수 있지만, 두 지표 중 어느 하나가 중요할 경우에는 F1으로 평가하는게 최적은 아닐 수 있다.
 
 **분석 근거:** `02_classification_data_analysis.md`, `02_classification_model_analysis.md`
 
@@ -60,10 +73,11 @@
 
 기본 손실 함수로 학습한 MLP-A와 클래스 가중 손실을 적용한 MLP-B를 비교하고, 구매 확률을 0/1로 구분하는 임계값(0.3·0.5·0.7)을 선택해야 합니다.
 
-- **검토한 선택지:** ___ (MLP-A / MLP-B의 학습 결과, 임계값 0.3·0.5·0.7)
-- **최종 선택한 MLP 설정·임계값·재학습 에포크:** ___
-- **선택 근거(Validation F1, Precision·Recall, FP·FN 및 가중 손실의 영향):** ___
-- **LogisticRegression과 비교했을 때 선택한 MLP의 특징:** ___
-- **감수한 한계 또는 추후 개선 방향:** ___
+- **검토한 선택지:** MLP-B 임계값 0.5 (MLP-A / MLP-B의 학습 결과, 임계값 0.3·0.5·0.7)
+- **최종 선택한 MLP 설정·임계값·재학습 에포크:** 
+    MLP-B, 임계값 0.5, 에포크 17
+- **선택 근거(Validation F1, Precision·Recall, FP·FN 및 가중 손실의 영향):** MLP-B는 Vali F1이 비교한 설정 중 가장 높아 선택했다. 가중치를 적용하여 MLP-A보다 Recall을 높이고 실제 구매 고객을 놓치는 비율을 줄일 수 있었다. 구매 고객 탐지를 중요하게 생각하여 MLP-B와 임계값 0.5를 최종 선택했다.
+- **LogisticRegression과 비교했을 때 선택한 MLP의 특징:** MLP-B는 LogisticRegression보다 Accuracy는 약간 낮았지만, F1과 Recall은 더 높게 나타났다. Precision은 0.734에서 0.575로 낮아져 미구매 고객을 구매로 잘못 예측하는 경우가 늘어났다. MLP-B는 전체 정답률보다는 구매 고객 탐지에 더 성능이 좋은 모델이라고 판단했다.
+- **감수한 한계 또는 추후 개선 방향:** MLP-B는 구매 고객을 찾아내는 Recall(재현율)이 높지만, Precision이(정밀도)는 상대적으로 낮아 미구매 고객을 구매로 잘못 예측하는 FP가 발생한다는 한계가 있다. 추가적인 모델 실험을 통해 Recall을 유지하면서 Precision도 개선하여 F1을 높이는 방향으로 성능을 개선하고자 한다.
 
 **분석 근거:** `02_classification_model_analysis.md`
